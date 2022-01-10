@@ -58,7 +58,10 @@ def get_unanswered_messages(client, channel_id, messages):
 def display_links(links):
     print("The following messages do not have any threaded replies.")
     for link in links:
-        print(link["link"] + ": " + link["text"])
+        if args.octopus_output_vars:
+            print("[" + link["link"] + "](" + link["link"] + "): " + link["text"])
+        else:
+            print(link["link"] + ": " + link["text"])
 
 
 def find_messages_without_threads():
