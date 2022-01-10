@@ -1,5 +1,6 @@
 import logging
 import argparse
+import base64
 from datetime import datetime
 from slack_sdk import WebClient
 
@@ -16,6 +17,10 @@ parser.add_argument('--slackChannelName',
                     action='store',
                     help='The Slack channel name',
                     required=True)
+parser.add_argument('--octopusOutputVars',
+                    dest='octopus_output_vars',
+                    action='store_true',
+                    help='The Slack channel name')
 args = parser.parse_args()
 
 
@@ -62,9 +67,13 @@ def find_messages_without_threads():
     messages = get_messages(client, channel_id)
     links = get_unanswered_messages(client, channel_id, messages)
     display_links(links)
-    if "set_octopusvariable" in globals():
-        set_octopusvariable("UnansweredMessageCount", str(len(links)))
-        set_octopusvariable("UnansweredMessages", str(len(links) != 0))
+    if args.octopus_output_vars:
+        print("##octopus[setVariable name='"
+              + base64.b64encode("UnansweredMessageCount".encode('ascii')).decode("ascii")
+              + "' value='" + base64.b64encode(str(len(links)).encode('ascii')).decode("ascii") + "']")
+        print("##octopus[setVariable name='"
+              + base64.b64encode("UnansweredMessages".encode('ascii')).decode("ascii")
+              + "' value='" + base64.b64encode(str(len(links) != 0).encode('ascii')).decode("ascii") + "']")
 
 
 find_messages_without_threads()
