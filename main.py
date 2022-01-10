@@ -51,6 +51,7 @@ def get_unanswered_messages(client, channel_id, messages):
 
 
 def display_links(links):
+    print("The following messages do not have any threaded replies.")
     for link in links:
         print(link["link"] + ": " + link["text"])
 
