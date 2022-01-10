@@ -1,5 +1,6 @@
 import logging
 import argparse
+from datetime import datetime
 from slack_sdk import WebClient
 
 logging.basicConfig(level=logging.INFO)
@@ -35,13 +36,31 @@ def get_messages(client, channel_id):
 def get_unanswered_messages(client, channel_id, messages):
     links = []
     for message in messages.data["messages"]:
-        if "subtype" not in message:
-            if "thread_ts" not in message:
-                links.append(client.chat_getPermalink(channel=channel_id, message_ts=message["ts"]).data["permalink"])
+        age = (datetime.now() - datetime.fromtimestamp(float(message['ts']))).total_seconds()
+        # Only get messages from the last day (with one hour overlap to catch any edge cases)
+        if age < 60 * 60 * 25:
+            # Subtypted messages tend to be things like users joining, so ignore those
+            if "subtype" not in message:
+                # The presence of thread_ts means this is a threaded conversation
+                if "thread_ts" not in message:
+                    links.append({
+                        "link": client.chat_getPermalink(
+                            channel=channel_id, message_ts=message["ts"]).data["permalink"],
+                        "text": message["text"]})
     return links
 
 
-client = WebClient(token=args.slack_api_token)
-channel_id = find_slack_channel(client, args.slack_channel_name)
-messages = get_messages(client, channel_id)
-get_unanswered_messages(client, channel_id, messages)
+def display_links(links):
+    for link in links:
+        print(link["link"] + ": " + link["text"])
+
+
+def find_messages_without_threads():
+    client = WebClient(token=args.slack_api_token)
+    channel_id = find_slack_channel(client, args.slack_channel_name)
+    messages = get_messages(client, channel_id)
+    links = get_unanswered_messages(client, channel_id, messages)
+    display_links(links)
+
+
+find_messages_without_threads()
