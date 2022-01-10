@@ -1,4 +1,3 @@
-import sys
 import logging
 import argparse
 from slack_sdk import WebClient
