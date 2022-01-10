@@ -62,6 +62,9 @@ def find_messages_without_threads():
     messages = get_messages(client, channel_id)
     links = get_unanswered_messages(client, channel_id, messages)
     display_links(links)
+    if "set_octopusvariable" in globals():
+        set_octopusvariable("UnansweredMessageCount", str(len(links)))
+        set_octopusvariable("UnansweredMessages", str(len(links) != 0))
 
 
 find_messages_without_threads()
