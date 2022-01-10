@@ -17,8 +17,8 @@ parser.add_argument('--slackChannelName',
                     action='store',
                     help='The Slack channel name',
                     required=True)
-parser.add_argument('--octopusOutputVars',
-                    dest='octopus_output_vars',
+parser.add_argument('--octopusOutput',
+                    dest='octopus_output',
                     action='store_true',
                     help='The Slack channel name')
 args = parser.parse_args()
@@ -58,7 +58,7 @@ def get_unanswered_messages(client, channel_id, messages):
 def display_links(links):
     print("The following messages do not have any threaded replies.")
     for link in links:
-        if args.octopus_output_vars:
+        if args.octopus_output:
             print("[" + link["link"] + "](" + link["link"] + "): " + link["text"])
         else:
             print(link["link"] + ": " + link["text"])
@@ -70,7 +70,7 @@ def find_messages_without_threads():
     messages = get_messages(client, channel_id)
     links = get_unanswered_messages(client, channel_id, messages)
     display_links(links)
-    if args.octopus_output_vars:
+    if args.octopus_output:
         print("##octopus[setVariable name='"
               + base64.b64encode("UnansweredMessageCount".encode('ascii')).decode("ascii")
               + "' value='" + base64.b64encode(str(len(links)).encode('ascii')).decode("ascii") + "']")
